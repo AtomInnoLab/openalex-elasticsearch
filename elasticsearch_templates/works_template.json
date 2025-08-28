@@ -1,4 +1,5 @@
 {
+  "index_patterns": ["works-v18-*"],
   "template": {
     "settings": {
       "index": {
@@ -16,9 +17,8 @@
     },
     "mappings": {
       "properties": {
-        "abstract_inverted_index": {
-          "type": "flattened",
-          "index": false
+        "abstract": {
+          "type": "text"
         },
         "alternate_host_venues": {
           "properties": {

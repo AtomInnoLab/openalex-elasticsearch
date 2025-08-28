@@ -9,7 +9,7 @@ input {
         jdbc_page_size => 100000
         last_run_metadata_path => "/usr/share/sql_last_value.yml"
         schedule => "0 * * * *"
-        statement => "SELECT updated, json_save, abstract, abstract_inverted_index, fulltext, authors_count, concepts_count from mid.json_works_fulltext_view WHERE updated >= TO_TIMESTAMP(:sql_last_value, 'YYYY-MM-DD hh24:mi:ss') - INTERVAL '3 min' and updated < now() - interval '1 min' order by updated"
+        statement => "SELECT updated, json_save from mid.json_works WHERE updated >= TO_TIMESTAMP(:sql_last_value, 'YYYY-MM-DD hh24:mi:ss') - INTERVAL '3 min' and updated < now() - interval '1 min' order by updated"
         use_column_value => true
         tracking_column => updated
         tracking_column_type => "timestamp"
@@ -66,21 +66,7 @@ output {
         document_id => "%{id}"
     }
 
-    # 同步成功后更新PostgreSQL记录状态
-    if "_ingest_ok" in [tags] {
-        jdbc {
-            driver_jar_path => "/usr/share/jars/postgresql-42.3.5.jar"
-            driver_class => "org.postgresql.Driver"
-            connection_string => "${JDBC_URL_PROD}"
-            username => "${JDBC_USER_PROD}"
-            password => "${JDBC_PASSWORD_PROD}"
-            statement => [
-                "UPDATE mid.json_works SET sync_status = 'synced_to_es', synced_at = CURRENT_TIMESTAMP WHERE id = ?",
-                "%{id}"
-            ]
-            plugin_timezone => "UTC"
-        }
-    }
+
 
 #      stdout { }
 }
