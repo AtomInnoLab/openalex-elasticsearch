@@ -1,7 +1,13 @@
-version: "3"
+version: "3.9"
+
+networks:
+  openalex_net:
+    external: true
+
 services:
   logstash:
     build: .
+    container_name: logstash_works
     environment:
       - XPACK_MONITORING_ENABLED=false
       - NODE_NAME=works
@@ -9,16 +15,20 @@ services:
       - "LS_JAVA_OPTS=-Xmx6g -Xms6g"
     env_file:
       - .env
-    volumes:
-      - ./jars/:/usr/share/jars/
-      - ./pipeline/:/usr/share/logstash/pipeline/
-      - ./sql_last_value.yml:/usr/share/sql_last_value.yml
-    command: logstash
-  metricbeat:
-    image: docker.elastic.co/beats/metricbeat:7.17.2
-    depends_on:
-      - logstash
-    env_file:
-      - .env
-    volumes:
-      - ./metricbeat.yml:/usr/share/metricbeat/metricbeat.yml
+    restart: unless-stopped
+    networks:
+      - openalex_net
+
+  # metricbeat:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile.metricbeat
+  #   container_name: metricbeat_works
+  #   depends_on:
+  #     - logstash
+  #   env_file:
+  #     - .env
+  #   command: ["-c", "/usr/share/metricbeat/metricbeat.yml", "-e"]
+  #   restart: unless-stopped
+  #   networks:
+  #     - openalex_net
